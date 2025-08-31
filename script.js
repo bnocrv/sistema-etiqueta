@@ -1,3 +1,4 @@
+// Usuários cadastrados para login
 const usuarios = [
   { user: "admin", senha: "1234" },
   { user: "joao", senha: "senha123" },
@@ -6,20 +7,21 @@ const usuarios = [
 
 let usuarioLogado = "";
 
-// Helper para focar próximo input
+// Função auxiliar para passar foco ao próximo input
 function focusNext(inputs, index) {
   if (index + 1 < inputs.length) {
     inputs[index + 1].focus();
   }
 }
 
-// LOGIN: Enter e botão
+// --- LOGIN ---
 document.getElementById("loginUser").addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
     e.preventDefault();
     document.getElementById("loginPass").focus();
   }
 });
+
 document.getElementById("loginPass").addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
     e.preventDefault();
@@ -30,6 +32,7 @@ document.getElementById("loginPass").addEventListener("keydown", (e) => {
 function fazerLogin() {
   const u = document.getElementById("loginUser").value.trim();
   const s = document.getElementById("loginPass").value.trim();
+
   const validado = usuarios.find((item) => item.user === u && item.senha === s);
 
   if (validado) {
@@ -37,6 +40,11 @@ function fazerLogin() {
     document.querySelector(".login").style.display = "none";
     document.querySelector(".formulario").style.display = "block";
     document.getElementById("origem").focus();
+
+    // Liberar os campos descrição e fornecedor para edição após login
+    document.getElementById("descricao").disabled = false;
+    document.getElementById("fornecedor").disabled = false;
+
     document.getElementById("loginMsg").innerText = "";
   } else {
     document.getElementById("loginMsg").innerText =
@@ -44,10 +52,9 @@ function fazerLogin() {
   }
 }
 
-// Navegação com Enter no formulário
-const formCamposIds = ["origem", "destino", "codigo", "quantTotal"];
-
-formCamposIds.forEach((id, i) => {
+// --- NAVEGAÇÃO POR ENTER NOS CAMPOS ---
+const camposIds = ["origem", "destino", "codigo", "quantTotal"];
+camposIds.forEach((id, i) => {
   const el = document.getElementById(id);
   el.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
@@ -64,7 +71,7 @@ formCamposIds.forEach((id, i) => {
         }
       } else {
         focusNext(
-          formCamposIds.map((id) => document.getElementById(id)),
+          camposIds.map((id) => document.getElementById(id)),
           i
         );
       }
@@ -72,7 +79,7 @@ formCamposIds.forEach((id, i) => {
   });
 });
 
-// Busca produto (simulado via API)
+// --- BUSCAR PRODUTO ---
 async function buscarProduto() {
   const codigo = document.getElementById("codigo").value.trim();
   if (!codigo) return;
@@ -86,20 +93,29 @@ async function buscarProduto() {
     const produto = data.find((p) => p.Código === codigo);
 
     if (produto) {
-      document.getElementById("descricao").value = produto.Descrição;
-      document.getElementById("fornecedor").value = produto.Fornecedor;
+      // Produto encontrado: preencher campos e liberar edição
+      document.getElementById("descricao").value = produto.Descrição || "";
+      document.getElementById("fornecedor").value = produto.Fornecedor || "";
+      document.getElementById("descricao").disabled = false;
+      document.getElementById("fornecedor").disabled = false;
     } else {
+      // Produto não encontrado: limpar campos, liberar edição e alertar usuário
       document.getElementById("descricao").value = "";
       document.getElementById("fornecedor").value = "";
-      alert("Código não encontrado.");
-      document.getElementById("codigo").focus();
+      document.getElementById("descricao").disabled = false;
+      document.getElementById("fornecedor").disabled = false;
+
+      alert(
+        "Código não encontrado.\nPor favor, preencha manualmente os campos Descrição e Fornecedor."
+      );
+      document.getElementById("descricao").focus();
     }
-  } catch {
-    alert("Erro ao buscar dados da planilha.");
+  } catch (error) {
+    alert("Erro ao buscar dados da planilha: " + error.message);
   }
 }
 
-// Controle volumes dinâmicos
+// --- CRIAÇÃO DINÂMICA DE VOLUMES ---
 const volumesContainer = document.getElementById("volumesContainer");
 let volumesQtds = [];
 
@@ -142,7 +158,6 @@ function criarVolumesFluidos(total) {
           return;
         }
 
-        // Soma dos volumes menos volume atual + novo valor
         const somaAtual = volumesQtds.reduce(
           (acc, cur, i) => (i === index ? acc : acc + cur),
           0
@@ -159,7 +174,7 @@ function criarVolumesFluidos(total) {
         volumesQtds[index] = val;
 
         if (somaVolumes === total) {
-          // Bloqueia inputs
+          // Todos volumes preenchidos, desabilitar inputs
           Array.from(document.querySelectorAll(".volumeQtd")).forEach((inp) => {
             inp.disabled = true;
           });
@@ -176,7 +191,7 @@ function criarVolumesFluidos(total) {
   criarInputVolume(0);
 }
 
-// Gerar e imprimir etiquetas
+// --- GERAÇÃO DE ETIQUETAS PARA IMPRESSÃO ---
 function gerarEtiqueta() {
   const origem = document.getElementById("origem").value.trim();
   const destino = document.getElementById("destino").value.trim();
@@ -185,17 +200,7 @@ function gerarEtiqueta() {
   const fornecedor = document.getElementById("fornecedor").value.trim();
   const total = parseInt(document.getElementById("quantTotal").value);
 
-  if (!origem) {
-    alert("Preencha o campo Origem.");
-    document.getElementById("origem").focus();
-    return;
-  }
-  if (!destino) {
-    alert("Preencha o campo Destino.");
-    document.getElementById("destino").focus();
-    return;
-  }
-  if (!codigo || !descricao || !fornecedor || !total) {
+  if (!origem || !destino || !codigo || !descricao || !fornecedor || !total) {
     alert("Preencha todos os campos obrigatórios.");
     return;
   }
@@ -218,6 +223,7 @@ function gerarEtiqueta() {
   }
 
   const totalVolumes = volumes.length;
+  const somaTexto = volumes.join(" + ");
 
   const printWindow = window.open("", "", "width=600,height=800");
   const doc = printWindow.document;
@@ -247,71 +253,62 @@ function gerarEtiqueta() {
             color: #222;
             margin-bottom: 20px;
             page-break-after: always;
+            position: relative;
           }
           .topo-logo {
-            margin-bottom: 10px;
-            text-align: left;
+            position: absolute;
+            top: 12px;
+            right: 16px;
           }
           .topo-logo img {
             height: 40px;
-            width: auto;
-            display: inline-block;
           }
-          .origem {
-            font-size: 13px;
-            margin-bottom: 8px;
-          }
-          .destino {
-            font-size: 24px;
-            margin-bottom: 8px;
-            font-weight: normal;
-          }
-          .destino strong {
-            font-weight: 900;
-          }
-          .codigo {
-            font-size: 28px;
-            margin-bottom: 10px;
-            font-weight: normal;
-          }
-          .codigo strong {
-            font-weight: 900;
-            font-size: 34px;
-            letter-spacing: 1.1px;
-          }
-          .descricao,
-          .fornecedor,
-          .total {
-            font-size: 18px;
+          .linha {
             margin-bottom: 6px;
+            font-size: 13px;
           }
-          .total strong {
-            font-weight: 900;
+          .linha.destino {
+            font-size: 24px;
           }
-          .volumes {
-            font-size: 16px;
-            margin-top: 16px;
+          .linha.codigo {
+            font-size: 34px;
+            font-weight: bold;
+            margin-bottom: 10px;
           }
-          .volumes span.info {
+          .linha.quantidade {
+            font-size: 20px;
+            font-weight: bold;
+          }
+          .linha.volumes {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 12px;
+          }
+          .linha.total {
+            font-size: 13px;
+            margin-top: 4px;
+          }
+          .label {
             font-weight: normal;
-            margin-right: 8px;
           }
-          .volumes span.quantidade {
-            font-weight: 900;
-            font-size: 22px;
+          .valor {
+            font-weight: bold;
+          }
+          .qrcode-container {
+            margin: 24px auto 0;
+            width: 140px;
+            text-align: center;
           }
           .rodape {
             font-size: 11px;
             color: #666;
-            border-top: 1px solid #ddd;
-            padding-top: 8px;
+            padding-top: 6px;
             margin-top: 12px;
-            display: flex;
-            justify-content: space-between;
             font-style: italic;
-            user-select: none;
+            text-align: center;
           }
         </style>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
       </head>
       <body>
       </body>
@@ -320,52 +317,70 @@ function gerarEtiqueta() {
 
   const body = doc.body;
 
-  // Carrega a lib do QRCode.js na janela de impressão
-  const scriptQRCode = doc.createElement("script");
-  scriptQRCode.src =
-    "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
-  doc.head.appendChild(scriptQRCode);
+  volumes.forEach((qtd, i) => {
+    const divEtiqueta = doc.createElement("div");
+    divEtiqueta.className = "etiquetaModelo";
 
-  scriptQRCode.onload = () => {
-    volumes.forEach((qtd, i) => {
-      const divEtiqueta = doc.createElement("div");
-      divEtiqueta.className = "etiquetaModelo";
+    divEtiqueta.innerHTML = `
+      <div class="topo-logo">
+        <img src="https://res.cloudinary.com/dmpqzayaa/image/upload/v1756312909/sqt5fplglswwk8isu9co.jpg" alt="Logo Empresa" />
+      </div>
 
-      divEtiqueta.innerHTML = `
-        <div class="topo-logo">
-          <img src="https://res.cloudinary.com/dmpqzayaa/image/upload/v1756312909/sqt5fplglswwk8isu9co.jpg" alt="Logo Empresa" />
-        </div>
-        <div class="origem">Origem: <span class="etqOrigem">${origem}</span></div>
-        <div class="destino">Destino: <strong>${destino}</strong></div>
-        <div class="codigo">Código: <strong>${codigo}</strong></div>
-        <div class="descricao">Descrição: <span class="etqDescricao">${descricao}</span></div>
-        <div class="fornecedor">Fornecedor: <span class="etqFornecedor">${fornecedor}</span></div>
-        <div class="total">Total: <strong>${total}</strong></div>
-        <div class="volumes">Volumes: <span class="info">${
-          i + 1
-        }/${totalVolumes}</span> <strong class="quantidade">(${qtd} peças)</strong></div>
-        <div id="qrcode${i}"></div>
-        <div class="rodape">
-          <div>Etiqueta gerada por: ${usuarioLogado}</div>
-          <div>Data: ${new Date().toLocaleString("pt-BR")}</div>
-        </div>
-      `;
+      <div style="font-size: 13px; margin-bottom: 6px;">
+        <span style="font-weight: normal;">Origem:</span> <span style="font-weight: bold;">${origem}</span>
+      </div>
+      <div style="font-size: 28px; margin-bottom: 6px;">
+        <span style="font-weight: normal;">Destino:</span> <span style="font-weight: bold;">${destino}</span>
+      </div>
+      <div style="font-size: 48px; font-weight: bold; text-align: center; margin-bottom: 12px;">
+        ${codigo}
+      </div>
+      <div style="font-size: 28px; margin-bottom: 6px;">
+        <span style="font-weight: normal;">Quantidade:</span> <span style="font-weight: bold;">${qtd} peça(s)</span>
+      </div>
+      <div style="font-size: 16px; margin-bottom: 6px;">
+        <span style="font-weight: normal;">Descrição:</span> <span style="font-weight: bold;">${descricao}</span>
+      </div>
+      <div style="font-size: 16px; margin-bottom: 6px;">
+        <span style="font-weight: normal;">Fornecedor:</span> <span style="font-weight: bold;">${fornecedor}</span>
+      </div>
+      <div style="font-size: 28px; margin-bottom: 6px;">
+        <span style="font-weight: normal;">Volumes:</span> 
+        <span style="font-weight: bold;">${i + 1}/${totalVolumes}</span>
+        <br />
+        <span style="font-size: 14px; font-weight: normal; color: #444;">(${somaTexto})</span>
+      </div>
+      
+      <div style="font-size: 13px; margin-bottom: 6px;">
+        <span style="font-weight: normal;">Total:</span> <span style="font-weight: bold;">${total}</span>
+      </div>
 
-      body.appendChild(divEtiqueta);
+      <div id="qrcode${i}" class="qrcode-container"></div>
 
-      // Gera o QRCode
-      new printWindow.QRCode(doc.getElementById(`qrcode${i}`), {
-        text: codigo,
-        width: 140,
-        height: 140,
-      });
+      <div class="rodape">
+        Etiqueta gerada por ${usuarioLogado} — ${new Date().toLocaleString(
+      "pt-BR"
+    )}
+      </div>
+    `;
+
+    body.appendChild(divEtiqueta);
+
+    // Gerar QR Code para essa etiqueta
+    const dataAtual = new Date().toLocaleString("pt-BR");
+    const volumesTexto = volumes.join("+"); // ex: "2+3+5"
+
+    const textoQRCode = `${dataAtual};${codigo};${fornecedor};${descricao};${total};${volumesTexto}`;
+
+    new doc.defaultView.QRCode(doc.getElementById(`qrcode${i}`), {
+      text: textoQRCode,
+      width: 140,
+      height: 140,
     });
+  });
 
-    // Dá um pequeno delay para garantir a geração dos QRCodes antes de imprimir
-    setTimeout(() => {
-      printWindow.focus();
-      printWindow.print();
-      // printWindow.close(); // Se quiser fechar a janela automaticamente após imprimir, descomente esta linha
-    }, 500);
-  };
+  setTimeout(() => {
+    printWindow.focus();
+    printWindow.print();
+  }, 500);
 }
