@@ -1,8 +1,12 @@
 // Usuários cadastrados para login
 const usuarios = [
-  { user: "admin", senha: "1234" },
-  { user: "joao", senha: "senha123" },
-  { user: "maria", senha: "senha456" },
+  { user: "cleyton", senha: "fe1234" },
+  { user: "helena", senha: "fe1234" },
+  { user: "alan", senha: "fe1234" },
+  { user: "yuri", senha: "fe1234" },
+  { user: "lino", senha: "fe1234" },
+  { user: "hugo", senha: "fe1234" },
+  { user: "bruno", senha: "fe1234" },
 ];
 
 let usuarioLogado = "";
@@ -347,3 +351,4 @@ function gerarEtiqueta() {
     printWindow.print();
   }, 500);
 }
+
