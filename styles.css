@@ -9,7 +9,7 @@
 /* BODY */
 body {
   background: #000; /* preto */
-  color: #000; /* texto preto */
+  color: #fff; /* texto branco */
   min-height: 100vh;
   display: flex;
   justify-content: center;
@@ -21,11 +21,11 @@ body {
 .login,
 .formulario {
   background: #fff; /* fundo branco */
-  border: 2px solid #000080; /* borda azul escuro */
+  border: 2px solid #c0392b; /* borda vermelho escuro */
   padding: 30px 25px;
   width: 100%;
   max-width: 400px;
-  box-shadow: 2px 2px 0 #000080, 4px 4px 0 #000080; /* sombra dupla azul para relevo */
+  box-shadow: 2px 2px 0 #c0392b, 4px 4px 0 #c0392b; /* sombra dupla vermelho para relevo */
   user-select: none;
 }
 
@@ -34,7 +34,7 @@ body {
 .formulario label {
   font-weight: normal;
   margin-bottom: 12px;
-  color: #000080; /* azul */
+  color: #c0392b; /* vermelho escuro */
   font-size: 1.7rem;
   letter-spacing: 0.05em;
   user-select: text;
@@ -57,7 +57,7 @@ body {
 .formulario input[readonly] {
   width: 100%;
   padding: 8px 10px;
-  border: 2px solid #000080;
+  border: 2px solid #c0392b;
   background-color: #fff;
   color: #000;
   font-size: 1rem;
@@ -76,9 +76,9 @@ body {
 .login input:focus,
 .formulario input:focus {
   outline: none;
-  border-color: #0000ff;
-  box-shadow: 0 0 6px #0000ff;
-  background-color: #cce0ff;
+  border-color: #c0392b;
+  box-shadow: 0 0 6px #c0392b;
+  background-color: #fceae9;
   color: #000;
 }
 
@@ -88,13 +88,13 @@ body {
   width: 100%;
   padding: 10px 0;
   margin-top: 25px;
-  border: 2px solid #000080;
-  background-color: #cce0ff;
-  color: #000080;
+  border: 2px solid #c0392b;
+  background-color: #fceae9;
+  color: #c0392b;
   font-weight: bold;
   font-size: 1.1rem;
   cursor: pointer;
-  box-shadow: 2px 2px 0 #000080;
+  box-shadow: 2px 2px 0 #c0392b;
   user-select: none;
   border-radius: 0;
   transition: none;
@@ -102,17 +102,17 @@ body {
 
 .login button:hover,
 .formulario button:focus {
-  background-color: #0000ff;
+  background-color: #c0392b;
   color: #fff;
-  border-color: #0000ff;
-  box-shadow: 1px 1px 0 #000050 inset;
+  border-color: #8e2621;
+  box-shadow: 1px 1px 0 #670000 inset;
 }
 
 /* MENSAGEM DE ERRO LOGIN */
 #loginMsg {
   margin-top: 15px;
   text-align: center;
-  color: #ff0000;
+  color: #ff4c4c;
   font-weight: bold;
   font-size: 1rem;
   user-select: none;
@@ -134,7 +134,7 @@ body {
 }
 
 .volume label {
-  color: #000080;
+  color: #c0392b;
   font-weight: normal;
   margin-bottom: 4px;
   display: block;
@@ -145,7 +145,7 @@ body {
   width: 100%;
   padding: 7px 10px;
   font-size: 1rem;
-  border: 2px solid #000080;
+  border: 2px solid #c0392b;
   background-color: #fff;
   color: #000;
   border-radius: 0;
@@ -155,9 +155,9 @@ body {
 
 .volume input:focus {
   outline: none;
-  border-color: #0000ff;
-  box-shadow: 0 0 6px #0000ff;
-  background-color: #cce0ff;
+  border-color: #8e2621;
+  box-shadow: 0 0 6px #8e2621;
+  background-color: #fceae9;
   color: #000;
 }
 
