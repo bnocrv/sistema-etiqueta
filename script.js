@@ -41,14 +41,12 @@ function fazerLogin() {
     document.querySelector(".formulario").style.display = "block";
     document.getElementById("origem").focus();
 
-    // Liberar os campos descrição e fornecedor para edição após login
     document.getElementById("descricao").disabled = false;
     document.getElementById("fornecedor").disabled = false;
 
     document.getElementById("loginMsg").innerText = "";
   } else {
-    document.getElementById("loginMsg").innerText =
-      "Usuário ou senha inválidos.";
+    document.getElementById("loginMsg").innerText = "Usuário ou senha inválidos.";
   }
 }
 
@@ -56,6 +54,7 @@ function fazerLogin() {
 const camposIds = ["origem", "destino", "codigo", "quantTotal"];
 camposIds.forEach((id, i) => {
   const el = document.getElementById(id);
+
   el.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -77,6 +76,13 @@ camposIds.forEach((id, i) => {
       }
     }
   });
+
+  // 🔧 Correção para funcionar no mobile: busca ao sair do campo "codigo"
+  if (id === "codigo") {
+    el.addEventListener("blur", () => {
+      buscarProduto();
+    });
+  }
 });
 
 // --- BUSCAR PRODUTO ---
@@ -93,13 +99,11 @@ async function buscarProduto() {
     const produto = data.find((p) => p.Código === codigo);
 
     if (produto) {
-      // Produto encontrado: preencher campos e liberar edição
       document.getElementById("descricao").value = produto.Descrição || "";
       document.getElementById("fornecedor").value = produto.Fornecedor || "";
       document.getElementById("descricao").disabled = false;
       document.getElementById("fornecedor").disabled = false;
     } else {
-      // Produto não encontrado: limpar campos, liberar edição e alertar usuário
       document.getElementById("descricao").value = "";
       document.getElementById("fornecedor").value = "";
       document.getElementById("descricao").disabled = false;
@@ -144,7 +148,6 @@ function criarVolumesFluidos(total) {
     volumesContainer.appendChild(divVol);
 
     volumesQtds[index] = 0;
-
     input.focus();
 
     input.addEventListener("keydown", (e) => {
@@ -174,7 +177,6 @@ function criarVolumesFluidos(total) {
         volumesQtds[index] = val;
 
         if (somaVolumes === total) {
-          // Todos volumes preenchidos, desabilitar inputs
           Array.from(document.querySelectorAll(".volumeQtd")).forEach((inp) => {
             inp.disabled = true;
           });
@@ -233,10 +235,7 @@ function gerarEtiqueta() {
       <head>
         <title>Imprimir Etiquetas</title>
         <style>
-          @page {
-            size: 100mm 150mm;
-            margin: 0;
-          }
+          @page { size: 100mm 150mm; margin: 0; }
           body {
             margin: 0;
             padding: 12px 16px;
@@ -260,45 +259,16 @@ function gerarEtiqueta() {
             top: 12px;
             right: 16px;
           }
-          .topo-logo img {
-            height: 40px;
-          }
-          .linha {
-            margin-bottom: 6px;
-            font-size: 13px;
-          }
-          .linha.destino {
-            font-size: 24px;
-          }
-          .linha.codigo {
-            font-size: 34px;
-            font-weight: bold;
-            margin-bottom: 10px;
-          }
-          .linha.quantidade {
-            font-size: 20px;
-            font-weight: bold;
-          }
-          .linha.volumes {
-            font-size: 18px;
-            font-weight: bold;
-            margin-top: 12px;
-          }
-          .linha.total {
-            font-size: 13px;
-            margin-top: 4px;
-          }
-          .label {
-            font-weight: normal;
-          }
-          .valor {
-            font-weight: bold;
-          }
-          .qrcode-container {
-            margin: 24px auto 0;
-            width: 140px;
-            text-align: center;
-          }
+          .topo-logo img { height: 40px; }
+          .linha { margin-bottom: 6px; font-size: 13px; }
+          .linha.destino { font-size: 24px; }
+          .linha.codigo { font-size: 34px; font-weight: bold; margin-bottom: 10px; }
+          .linha.quantidade { font-size: 20px; font-weight: bold; }
+          .linha.volumes { font-size: 18px; font-weight: bold; margin-top: 12px; }
+          .linha.total { font-size: 13px; margin-top: 4px; }
+          .label { font-weight: normal; }
+          .valor { font-weight: bold; }
+          .qrcode-container { margin: 24px auto 0; width: 140px; text-align: center; }
           .rodape {
             font-size: 11px;
             color: #666;
@@ -325,7 +295,6 @@ function gerarEtiqueta() {
       <div class="topo-logo">
         <img src="https://res.cloudinary.com/dmpqzayaa/image/upload/v1756312909/sqt5fplglswwk8isu9co.jpg" alt="Logo Empresa" />
       </div>
-
       <div style="font-size: 13px; margin-bottom: 6px;">
         <span style="font-weight: normal;">Origem:</span> <span style="font-weight: bold;">${origem}</span>
       </div>
@@ -350,25 +319,19 @@ function gerarEtiqueta() {
         <br />
         <span style="font-size: 14px; font-weight: normal; color: #444;">(${somaTexto})</span>
       </div>
-      
       <div style="font-size: 13px; margin-bottom: 6px;">
         <span style="font-weight: normal;">Total:</span> <span style="font-weight: bold;">${total}</span>
       </div>
-
       <div id="qrcode${i}" class="qrcode-container"></div>
-
       <div class="rodape">
-        Etiqueta gerada por ${usuarioLogado} — ${new Date().toLocaleString(
-      "pt-BR"
-    )}
+        Etiqueta gerada por ${usuarioLogado} — ${new Date().toLocaleString("pt-BR")}
       </div>
     `;
 
     body.appendChild(divEtiqueta);
 
-    // Gerar QR Code para essa etiqueta
     const dataAtual = new Date().toLocaleString("pt-BR");
-    const volumesTexto = volumes.join("+"); // ex: "2+3+5"
+    const volumesTexto = volumes.join("+");
 
     const textoQRCode = `${dataAtual};${codigo};${fornecedor};${descricao};${total};${volumesTexto}`;
 
