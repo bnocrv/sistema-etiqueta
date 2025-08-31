@@ -38,14 +38,14 @@
         padding: 10px 25px;
         font-size: 16px;
         border: none;
-        background-color: #2e86de;
+        background-color: #c0392b;
         color: white;
         border-radius: 4px;
         cursor: pointer;
         transition: background-color 0.3s ease;
       }
       .login button:hover {
-        background-color: #1b4f72;
+        background-color: #993024;
       }
 
       #loginMsg {
@@ -57,7 +57,7 @@
       .criador-texto {
         margin-top: 18px;
         font-size: 13px;
-        color: #888;
+        color: #000000;
         text-align: center;
         font-style: italic;
         user-select: none;
@@ -97,7 +97,7 @@
         margin-top: 20px;
         padding: 12px 30px;
         font-size: 17px;
-        background-color: #27ae60;
+        background-color: #c0392b;
         color: white;
         border: none;
         border-radius: 6px;
@@ -106,7 +106,7 @@
         transition: background-color 0.25s ease;
       }
       .formulario button:hover {
-        background-color: #1e8449;
+        background-color: #993024;
       }
 
       #volumesContainer {
@@ -214,7 +214,7 @@
 
       .rodape {
         font-size: 11px;
-        color: #666;
+        color: #c0392b;
         border-top: 1px solid #ddd;
         padding-top: 8px;
         margin-top: 12px;
@@ -226,6 +226,36 @@
     </style>
   </head>
   <body>
+    <header
+      class="topo-etiqueta"
+      style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 60px;
+        background: #c0392b;
+        display: flex;
+        align-items: center;
+        justify-content: center; /* Centraliza horizontalmente */
+        gap: 12px;
+        padding: 0 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        z-index: 9999;
+      "
+    >
+      <img
+        src="https://res.cloudinary.com/dmpqzayaa/image/upload/v1756312909/sqt5fplglswwk8isu9co.jpg"
+        alt="Logo Empresa"
+        style="height: 40px; width: auto"
+      />
+      <h1
+        style="font-family: 'Orbitron', sans-serif; font-size: 20px; margin: 0"
+      >
+        Sistema Etiqueta
+      </h1>
+    </header>
+
     <!-- TELA LOGIN -->
     <div class="login">
       <h2>Login</h2>
@@ -243,7 +273,7 @@
       />
       <button onclick="fazerLogin()">Entrar</button>
       <div id="loginMsg"></div>
-  <div class="criador-texto">
+      <div class="criador-texto">
         Criado por
         <a
           href="https://github.com/bnocrv"
@@ -253,7 +283,8 @@
           Bruno dos S. Carvalho
         </a>
       </div>
-      </div>
+    </div>
+
     <!-- FORMULÁRIO DE ETIQUETA -->
     <div class="formulario">
       <label for="origem">Origem:</label>
