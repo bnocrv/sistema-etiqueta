@@ -1,180 +1,356 @@
-/* Reset básico */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: "Tahoma", Geneva, Verdana, sans-serif;
+// Usuários cadastrados para login
+const usuarios = [
+  { user: "cleyton", senha: "fe1234" },
+  { user: "helena", senha: "fe1234" },
+  { user: "alan", senha: "fe1234" },
+  { user: "yuri", senha: "fe1234" },
+  { user: "lino", senha: "fe1234" },
+  { user: "hugo", senha: "fe1234" },
+  { user: "bruno", senha: "fe1234" },
+];
+
+let usuarioLogado = "";
+
+// Função auxiliar para passar foco ao próximo input
+function focusNext(inputs, index) {
+  if (index + 1 < inputs.length) {
+    inputs[index + 1].focus();
+  }
 }
 
-/* BODY */
-body {
-  background: #000; /* preto */
-  color: #fff; /* texto branco */
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 30px;
+// --- LOGIN ---
+document.getElementById("loginUser").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    document.getElementById("loginPass").focus();
+  }
+});
+
+document.getElementById("loginPass").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    fazerLogin();
+  }
+});
+
+function fazerLogin() {
+  const u = document.getElementById("loginUser").value.trim();
+  const s = document.getElementById("loginPass").value.trim();
+
+  const validado = usuarios.find((item) => item.user === u && item.senha === s);
+
+  if (validado) {
+    usuarioLogado = validado.user;
+    document.querySelector(".login").style.display = "none";
+    document.querySelector(".formulario").style.display = "block";
+    document.getElementById("origem").focus();
+
+    document.getElementById("descricao").disabled = false;
+    document.getElementById("fornecedor").disabled = false;
+
+    document.getElementById("loginMsg").innerText = "";
+  } else {
+    document.getElementById("loginMsg").innerText =
+      "Usuário ou senha inválidos.";
+  }
 }
 
-/* LOGIN E FORMULÁRIO - Container base */
-.login,
-.formulario {
-  background: #fff; /* fundo branco */
-  border: 2px solid #c0392b; /* borda vermelho escuro */
-  padding: 30px 25px;
-  width: 100%;
-  max-width: 400px;
-  box-shadow: 2px 2px 0 #c0392b, 4px 4px 0 #c0392b; /* sombra dupla vermelho para relevo */
-  user-select: none;
+// --- NAVEGAÇÃO POR ENTER NOS CAMPOS ---
+const camposIds = ["origem", "destino", "codigo", "quantTotal"];
+camposIds.forEach((id, i) => {
+  const el = document.getElementById(id);
+
+  el.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+
+      if (id === "codigo") {
+        buscarProduto().then(() => {
+          document.getElementById("quantTotal").focus();
+        });
+      } else if (id === "quantTotal") {
+        const total = parseInt(el.value);
+        if (total && total > 0) {
+          criarVolumesFluidos(total);
+        }
+      } else {
+        focusNext(
+          camposIds.map((id) => document.getElementById(id)),
+          i
+        );
+      }
+    }
+  });
+
+  // 🔧 Correção para funcionar no mobile: busca ao sair do campo "codigo"
+  if (id === "codigo") {
+    el.addEventListener("blur", () => {
+      buscarProduto();
+    });
+  }
+});
+
+// --- BUSCAR PRODUTO ---
+async function buscarProduto() {
+  const codigo = document.getElementById("codigo").value.trim();
+  if (!codigo) return;
+
+  const url =
+    "https://opensheet.elk.sh/1c88BAncBpS7XWzMrYdEfYM78hJ95-e8qCt_SqH1ZPRI/BaseProdutos";
+
+  try {
+    const resp = await fetch(url);
+    const data = await resp.json();
+    const produto = data.find((p) => p.Código === codigo);
+
+    if (produto) {
+      document.getElementById("descricao").value = produto.Descrição || "";
+      document.getElementById("fornecedor").value = produto.Fornecedor || "";
+      document.getElementById("descricao").disabled = false;
+      document.getElementById("fornecedor").disabled = false;
+    } else {
+      document.getElementById("descricao").value = "";
+      document.getElementById("fornecedor").value = "";
+      document.getElementById("descricao").disabled = false;
+      document.getElementById("fornecedor").disabled = false;
+
+      alert(
+        "Código não encontrado.\nPor favor, preencha manualmente os campos Descrição e Fornecedor."
+      );
+      document.getElementById("descricao").focus();
+    }
+  } catch (error) {
+    alert("Erro ao buscar dados da planilha: " + error.message);
+  }
 }
 
-/* TÍTULOS */
-.login h2,
-.formulario label {
-  font-weight: normal;
-  margin-bottom: 12px;
-  color: #c0392b; /* vermelho escuro */
-  font-size: 1.7rem;
-  letter-spacing: 0.05em;
-  user-select: text;
-  text-align: center;
-  text-shadow: 1px 1px 0 #fff; /* sombra branca para dar relevo */
-}
+// --- CRIAÇÃO DINÂMICA DE VOLUMES ---
+const volumesContainer = document.getElementById("volumesContainer");
+let volumesQtds = [];
 
-/* LABELS DO FORMULÁRIO */
-.formulario label {
-  text-align: left;
-  display: block;
-  margin-top: 18px;
-  font-size: 1rem;
-}
+function criarVolumesFluidos(total) {
+  volumesContainer.innerHTML = "";
+  volumesQtds = [];
 
-/* INPUTS */
-.login input,
-.formulario input[type="text"],
-.formulario input[type="number"],
-.formulario input[readonly] {
-  width: 100%;
-  padding: 8px 10px;
-  border: 2px solid #c0392b;
-  background-color: #fff;
-  color: #000;
-  font-size: 1rem;
-  box-shadow: inset 1px 1px 0 #ccc, inset -1px -1px 0 #fff;
-  border-radius: 0;
-  transition: none;
-  user-select: text;
-}
+  function criarInputVolume(index) {
+    if (index >= total) return;
 
-.login input::placeholder,
-.formulario input::placeholder {
-  color: #666;
-  font-style: normal;
-}
+    const divVol = document.createElement("div");
+    divVol.className = "volume";
 
-.login input:focus,
-.formulario input:focus {
-  outline: none;
-  border-color: #c0392b;
-  box-shadow: 0 0 6px #c0392b;
-  background-color: #fceae9;
-  color: #000;
-}
+    const label = document.createElement("label");
+    label.innerText = `Volume ${index + 1}:`;
+    divVol.appendChild(label);
 
-/* BOTÕES */
-.login button,
-.formulario button {
-  width: 100%;
-  padding: 10px 0;
-  margin-top: 25px;
-  border: 2px solid #c0392b;
-  background-color: #fceae9;
-  color: #c0392b;
-  font-weight: bold;
-  font-size: 1.1rem;
-  cursor: pointer;
-  box-shadow: 2px 2px 0 #c0392b;
-  user-select: none;
-  border-radius: 0;
-  transition: none;
-}
+    const input = document.createElement("input");
+    input.type = "number";
+    input.min = 1;
+    input.placeholder = "Quantidade";
+    input.required = true;
+    input.className = "volumeQtd";
+    divVol.appendChild(input);
 
-.login button:hover,
-.formulario button:focus {
-  background-color: #c0392b;
-  color: #fff;
-  border-color: #8e2621;
-  box-shadow: 1px 1px 0 #670000 inset;
-}
+    volumesContainer.appendChild(divVol);
 
-/* MENSAGEM DE ERRO LOGIN */
-#loginMsg {
-  margin-top: 15px;
-  text-align: center;
-  color: #ff4c4c;
-  font-weight: bold;
-  font-size: 1rem;
-  user-select: none;
-}
+    volumesQtds[index] = 0;
+    input.focus();
 
-/* CONTAINER DE VOLUMES */
-#volumesContainer {
-  margin-top: 22px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px;
-  justify-content: space-between;
-}
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
 
-/* CADA VOLUME */
-.volume {
-  flex: 1 1 45%;
-  min-width: 140px;
-}
+        const val = parseInt(input.value);
+        if (!val || val <= 0) {
+          alert("Digite uma quantidade válida maior que zero.");
+          input.focus();
+          return;
+        }
 
-.volume label {
-  color: #c0392b;
-  font-weight: normal;
-  margin-bottom: 4px;
-  display: block;
-  user-select: text;
-}
+        const somaAtual = volumesQtds.reduce(
+          (acc, cur, i) => (i === index ? acc : acc + cur),
+          0
+        );
+        const somaVolumes = somaAtual + val;
 
-.volume input {
-  width: 100%;
-  padding: 7px 10px;
-  font-size: 1rem;
-  border: 2px solid #c0392b;
-  background-color: #fff;
-  color: #000;
-  border-radius: 0;
-  box-shadow: inset 1px 1px 0 #ccc, inset -1px -1px 0 #fff;
-  transition: none;
-}
+        if (somaVolumes > total) {
+          alert("A soma dos volumes não pode ultrapassar a quantidade total.");
+          input.value = "";
+          input.focus();
+          return;
+        }
 
-.volume input:focus {
-  outline: none;
-  border-color: #8e2621;
-  box-shadow: 0 0 6px #8e2621;
-  background-color: #fceae9;
-  color: #000;
-}
+        volumesQtds[index] = val;
 
-/* RESPONSIVIDADE */
-@media (max-width: 460px) {
-  .volume {
-    flex: 1 1 100%;
+        if (somaVolumes === total) {
+          Array.from(document.querySelectorAll(".volumeQtd")).forEach((inp) => {
+            inp.disabled = true;
+          });
+          document.querySelector(".formulario button").focus();
+        } else {
+          criarInputVolume(index + 1);
+          const inputs = document.querySelectorAll(".volumeQtd");
+          if (inputs[index + 1]) inputs[index + 1].focus();
+        }
+      }
+    });
   }
 
-  .login,
-  .formulario {
-    max-width: 100%;
-    padding: 25px 15px;
+  criarInputVolume(0);
+}
+
+// --- GERAÇÃO DE ETIQUETAS PARA IMPRESSÃO ---
+function gerarEtiqueta() {
+  const origem = document.getElementById("origem").value.trim();
+  const destino = document.getElementById("destino").value.trim();
+  const codigo = document.getElementById("codigo").value.trim();
+  const descricao = document.getElementById("descricao").value.trim();
+  const fornecedor = document.getElementById("fornecedor").value.trim();
+  const total = parseInt(document.getElementById("quantTotal").value);
+
+  if (!origem || !destino || !codigo || !descricao || !fornecedor || !total) {
+    alert("Preencha todos os campos obrigatórios.");
+    return;
   }
 
-  .login h2,
-  .formulario label {
-    font-size: 1.4rem;
+  const volumesInputs = document.querySelectorAll(".volumeQtd");
+  if (volumesInputs.length === 0) {
+    alert("Preencha os volumes.");
+    document.getElementById("quantTotal").focus();
+    return;
   }
+
+  const volumes = Array.from(volumesInputs).map(
+    (input) => parseInt(input.value) || 0
+  );
+  const somaVolumes = volumes.reduce((a, b) => a + b, 0);
+
+  if (somaVolumes !== total) {
+    alert("A soma dos volumes deve ser igual à quantidade total.");
+    return;
+  }
+
+  const totalVolumes = volumes.length;
+  const somaTexto = volumes.join(" + ");
+
+  const printWindow = window.open("", "", "width=600,height=800");
+  const doc = printWindow.document;
+
+  doc.write(`
+    <html>
+      <head>
+        <title>Imprimir Etiquetas</title>
+        <style>
+          @page { size: 100mm 150mm; margin: 0; }
+          body {
+            margin: 0;
+            padding: 12px 16px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: white;
+          }
+          .etiquetaModelo {
+            width: 100mm;
+            height: 150mm;
+            padding: 12px 16px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            color: #222;
+            margin-bottom: 20px;
+            page-break-after: always;
+            position: relative;
+          }
+          .topo-logo {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+          }
+          .topo-logo img { height: 40px; }
+          .linha { margin-bottom: 6px; font-size: 13px; }
+          .linha.destino { font-size: 24px; }
+          .linha.codigo { font-size: 34px; font-weight: bold; margin-bottom: 10px; }
+          .linha.quantidade { font-size: 20px; font-weight: bold; }
+          .linha.volumes { font-size: 18px; font-weight: bold; margin-top: 12px; }
+          .linha.total { font-size: 13px; margin-top: 4px; }
+          .label { font-weight: normal; }
+          .valor { font-weight: bold; }
+          .qrcode-container { margin: 24px auto 0; width: 140px; text-align: center; }
+          .rodape {
+            font-size: 11px;
+            color: #666;
+            padding-top: 6px;
+            margin-top: 12px;
+            font-style: italic;
+            text-align: center;
+          }
+        </style>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+      </head>
+      <body>
+      </body>
+    </html>
+  `);
+
+  const body = doc.body;
+
+  volumes.forEach((qtd, i) => {
+    const divEtiqueta = doc.createElement("div");
+    divEtiqueta.className = "etiquetaModelo";
+
+    divEtiqueta.innerHTML = `
+      <div class="topo-logo">
+        <img src="https://res.cloudinary.com/dmpqzayaa/image/upload/v1756312909/sqt5fplglswwk8isu9co.jpg" alt="Logo Empresa" />
+      </div>
+      <div style="font-size: 13px; margin-bottom: 6px;">
+        <span style="font-weight: normal;">Origem:</span> <span style="font-weight: bold;">${origem}</span>
+      </div>
+      <div style="font-size: 28px; margin-bottom: 6px;">
+        <span style="font-weight: normal;">Destino:</span> <span style="font-weight: bold;">${destino}</span>
+      </div>
+      <div style="font-size: 48px; font-weight: bold; text-align: center; margin-bottom: 12px;">
+        ${codigo}
+      </div>
+      <div style="font-size: 28px; margin-bottom: 6px;">
+        <span style="font-weight: normal;">Quantidade:</span> <span style="font-weight: bold;">${qtd} peça(s)</span>
+      </div>
+      <div style="font-size: 16px; margin-bottom: 6px;">
+        <span style="font-weight: normal;">Descrição:</span> <span style="font-weight: bold;">${descricao}</span>
+      </div>
+      <div style="font-size: 16px; margin-bottom: 6px;">
+        <span style="font-weight: normal;">Fornecedor:</span> <span style="font-weight: bold;">${fornecedor}</span>
+      </div>
+      <div style="font-size: 28px; margin-bottom: 6px;">
+        <span style="font-weight: normal;">Volumes:</span> 
+        <span style="font-weight: bold;">${i + 1}/${totalVolumes}</span>
+        <br />
+        <span style="font-size: 14px; font-weight: normal; color: #444;">(${somaTexto})</span>
+      </div>
+      <div style="font-size: 13px; margin-bottom: 6px;">
+        <span style="font-weight: normal;">Total:</span> <span style="font-weight: bold;">${total}</span>
+      </div>
+      <div id="qrcode${i}" class="qrcode-container"></div>
+      <div class="rodape">
+        Etiqueta gerada por ${usuarioLogado} — ${new Date().toLocaleString(
+      "pt-BR"
+    )}
+      </div>
+    `;
+
+    body.appendChild(divEtiqueta);
+
+    const dataAtual = new Date().toLocaleString("pt-BR");
+    const volumesTexto = volumes.join("+");
+
+    const textoQRCode = `${dataAtual};${codigo};${fornecedor};${descricao};${total};${volumesTexto}`;
+
+    new doc.defaultView.QRCode(doc.getElementById(`qrcode${i}`), {
+      text: textoQRCode,
+      width: 140,
+      height: 140,
+    });
+  });
+
+  setTimeout(() => {
+    printWindow.focus();
+    printWindow.print();
+  }, 500);
 }
