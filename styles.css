@@ -1,3 +1,180 @@
-h1 {
-  text-decoration: underline;
+/* Reset básico */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Tahoma", Geneva, Verdana, sans-serif;
+}
+
+/* BODY */
+body {
+  background: #000; /* preto */
+  color: #000; /* texto preto */
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px;
+}
+
+/* LOGIN E FORMULÁRIO - Container base */
+.login,
+.formulario {
+  background: #fff; /* fundo branco */
+  border: 2px solid #000080; /* borda azul escuro */
+  padding: 30px 25px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 2px 2px 0 #000080, 4px 4px 0 #000080; /* sombra dupla azul para relevo */
+  user-select: none;
+}
+
+/* TÍTULOS */
+.login h2,
+.formulario label {
+  font-weight: normal;
+  margin-bottom: 12px;
+  color: #000080; /* azul */
+  font-size: 1.7rem;
+  letter-spacing: 0.05em;
+  user-select: text;
+  text-align: center;
+  text-shadow: 1px 1px 0 #fff; /* sombra branca para dar relevo */
+}
+
+/* LABELS DO FORMULÁRIO */
+.formulario label {
+  text-align: left;
+  display: block;
+  margin-top: 18px;
+  font-size: 1rem;
+}
+
+/* INPUTS */
+.login input,
+.formulario input[type="text"],
+.formulario input[type="number"],
+.formulario input[readonly] {
+  width: 100%;
+  padding: 8px 10px;
+  border: 2px solid #000080;
+  background-color: #fff;
+  color: #000;
+  font-size: 1rem;
+  box-shadow: inset 1px 1px 0 #ccc, inset -1px -1px 0 #fff;
+  border-radius: 0;
+  transition: none;
+  user-select: text;
+}
+
+.login input::placeholder,
+.formulario input::placeholder {
+  color: #666;
+  font-style: normal;
+}
+
+.login input:focus,
+.formulario input:focus {
+  outline: none;
+  border-color: #0000ff;
+  box-shadow: 0 0 6px #0000ff;
+  background-color: #cce0ff;
+  color: #000;
+}
+
+/* BOTÕES */
+.login button,
+.formulario button {
+  width: 100%;
+  padding: 10px 0;
+  margin-top: 25px;
+  border: 2px solid #000080;
+  background-color: #cce0ff;
+  color: #000080;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 #000080;
+  user-select: none;
+  border-radius: 0;
+  transition: none;
+}
+
+.login button:hover,
+.formulario button:focus {
+  background-color: #0000ff;
+  color: #fff;
+  border-color: #0000ff;
+  box-shadow: 1px 1px 0 #000050 inset;
+}
+
+/* MENSAGEM DE ERRO LOGIN */
+#loginMsg {
+  margin-top: 15px;
+  text-align: center;
+  color: #ff0000;
+  font-weight: bold;
+  font-size: 1rem;
+  user-select: none;
+}
+
+/* CONTAINER DE VOLUMES */
+#volumesContainer {
+  margin-top: 22px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: space-between;
+}
+
+/* CADA VOLUME */
+.volume {
+  flex: 1 1 45%;
+  min-width: 140px;
+}
+
+.volume label {
+  color: #000080;
+  font-weight: normal;
+  margin-bottom: 4px;
+  display: block;
+  user-select: text;
+}
+
+.volume input {
+  width: 100%;
+  padding: 7px 10px;
+  font-size: 1rem;
+  border: 2px solid #000080;
+  background-color: #fff;
+  color: #000;
+  border-radius: 0;
+  box-shadow: inset 1px 1px 0 #ccc, inset -1px -1px 0 #fff;
+  transition: none;
+}
+
+.volume input:focus {
+  outline: none;
+  border-color: #0000ff;
+  box-shadow: 0 0 6px #0000ff;
+  background-color: #cce0ff;
+  color: #000;
+}
+
+/* RESPONSIVIDADE */
+@media (max-width: 460px) {
+  .volume {
+    flex: 1 1 100%;
+  }
+
+  .login,
+  .formulario {
+    max-width: 100%;
+    padding: 25px 15px;
+  }
+
+  .login h2,
+  .formulario label {
+    font-size: 1.4rem;
+  }
 }
